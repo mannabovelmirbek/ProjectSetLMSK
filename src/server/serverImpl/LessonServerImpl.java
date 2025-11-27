@@ -13,18 +13,40 @@ public class LessonServerImpl implements LessonServer {
     @Override
     public String addNewLessonToGroup(String groupName, String taskDescription, Lesson lesson) {
         try {
-            if (lesson == null) return "Lesson null болбошу керек!";
+            if (lesson.getLessonName() == null || lesson.getLessonName().isBlank()) {
+                return "Сабактын аты бош болбошу керек!";
+            }
+
+            if (taskDescription == null || taskDescription.isBlank()) {
+                return "Сабактын тапшырмасы бош болбошу керек!";
+            }
+
+
+            lesson.setTaskDescription(taskDescription);
+
             for (Group group : Db.groups) {
                 if (group.getGroupName().equalsIgnoreCase(groupName)) {
-                    lesson.setTaskDescription(taskDescription);
-                    if (group.getLessons() == null) group.setLessons(new java.util.ArrayList<>());
+
+                    if (group.getLessons() == null) {
+                        group.setLessons(new java.util.ArrayList<>());
+                    }
+
+
                     group.getLessons().add(lesson);
-                    return "Сабак ийгиликтуу кошулду!";
+
+                    Db.lessons.add(lesson);
+
+                    return "Сабак ийгиликтүү кошулду!";
                 }
             }
-            return "Группа табылган жок!";
-        } catch (Exception e) {
-            return "Сабак кошууда ката чыкты: " + e.getMessage();
+
+            return "Мындай аттуу группа табылган жок!";
+        }
+        catch (NullPointerException e) {
+            return "Ката: Сабак же группа маанилери null болуп жатат.";
+        }
+        catch (Exception e) {
+            return "Белгисиз ката чыкты: " + e.getMessage();
         }
     }
 
@@ -60,17 +82,32 @@ public class LessonServerImpl implements LessonServer {
     @Override
     public String deleteLesson(String lessonName) {
         try {
-            Iterator<Lesson> iterator = Db.lessons.iterator();
-            while (iterator.hasNext()) {
-                Lesson lesson = iterator.next();
+            Lesson toDelete = null;
+
+            // Сабакты табабыз
+            for (Lesson lesson : Db.lessons) {
                 if (lesson.getLessonName().equalsIgnoreCase(lessonName)) {
-                    iterator.remove();
-                    return "Сабак ийгиликтуу очурулду!";
+                    toDelete = lesson;
+                    break;
                 }
             }
-            return "Сабак табылган жок!";
+
+            if (toDelete == null) {
+                return "Сабак табылган жок!";
+            }
+
+            // 1) Db.lessonsтен өчүрөбүз
+            Db.lessons.remove(toDelete);
+
+            // 2) Бардык группалардан да өчүрөбүз
+            for (Group group : Db.groups) {
+                group.getLessons().remove(toDelete);
+            }
+
+            return "Сабак ийгиликтуу очурулду!";
+
         } catch (Exception e) {
-            return "Сабак очурулганда ката чыкты: " + e.getMessage();
+            return "Сабакты өчүрүүдө ката чыкты: " + e.getMessage();
         }
     }
 

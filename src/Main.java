@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
+import enums.Gender;
 
 public class Main {
     public static void main(String[] args) {
@@ -143,6 +144,18 @@ public class Main {
                     newStudent.setGmail(sc.nextLine());
                     System.out.print("Студенттин сыр созу: ");
                     newStudent.setPassword(sc.nextLine());
+
+                    Gender gender = null;
+                    while (gender == null) {
+                        System.out.print("Студенттин жынысын жазыныз (MALE/FEMALE): ");
+                        String g = sc.nextLine().trim().toUpperCase();
+                        try {
+                            gender = Gender.valueOf(g);
+                        } catch (IllegalArgumentException ex) {
+                            System.out.println("Жарамсыз туура эмес формат. Текшерип кайра жазыңыз: MALE же FEMALE.");
+                        }
+                    }
+                    newStudent.setGender(gender);
 
                     System.out.println(studentServer.addNewStudentToGroup(groupName, newStudent));
                 }
